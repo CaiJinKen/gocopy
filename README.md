@@ -60,9 +60,9 @@ func main() {
 	data := gocopy.NewFrom(conf) // data=>main.Config
 	data = gocopy.NewFrom(&conf) // data=>&main.Config
 	// data will intact when conf changed
-  
-  // handle data
-  fmt.Printf("data %v\n",data)
+	
+	// handle data
+	fmt.Printf("data %v\n",data)
 }
 ```
 
