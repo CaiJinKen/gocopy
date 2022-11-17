@@ -1,7 +1,6 @@
 package gocopy
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -77,7 +76,5 @@ func TestUpdate(t *testing.T) {
 	if !_src.Equal(*dst) {
 		t.Error("Update err")
 	}
-	reference := 0
-	fmt.Println(reference)
 
 }

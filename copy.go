@@ -101,16 +101,43 @@ func Update(src, dst interface{}) error {
 	}
 
 	for i := 0; i < dstT.Elem().NumField(); i++ {
-		dstF := dstT.Elem().Field(i)
-		srcF, ok := srcT.FieldByName(dstF.Name)
+		dstTF := dstT.Elem().Field(i)
+		srcTF, ok := srcT.FieldByName(dstTF.Name)
 		if !ok {
 			continue
 		}
-
-		if dstF.Type.Kind().String() != srcF.Type.Kind().String() {
+		if srcTF.Type.Kind().String() != srcTF.Type.Kind().String() {
 			continue
 		}
-		dstV.Elem().Field(i).Set(srcV.FieldByName(dstF.Name))
+
+		srcVF := srcV.FieldByName(dstTF.Name)
+		dstVF := dstV.Elem().Field(i)
+		switch dstTF.Type.Kind() {
+		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			if v := srcVF.Int(); v != 0 {
+				dstVF.SetInt(v)
+			}
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+			if v := srcVF.Uint(); v > 0 {
+				dstVF.SetUint(v)
+			}
+		case reflect.String:
+			if v := srcVF.String(); v != "" {
+				dstVF.SetString(v)
+			}
+		case reflect.Bool:
+			if v := srcVF.Bool(); v != false {
+				dstVF.SetBool(v)
+			}
+		case reflect.Ptr, reflect.Map, reflect.Chan, reflect.Func:
+			if !srcVF.IsNil() {
+				dstVF.Set(srcVF)
+			}
+		default:
+			dstVF.Set(srcVF)
+
+		}
+
 	}
 
 	return nil
