@@ -1,10 +1,11 @@
 package gocopy
 
 import (
+	"errors"
 	"reflect"
 )
 
-// NewFrom get a copy from src
+// NewFrom get a deep copy from src
 func NewFrom(src interface{}) (dst interface{}) {
 	if src == nil {
 		return nil
@@ -73,4 +74,44 @@ func NewFrom(src interface{}) (dst interface{}) {
 	}
 	dst = dstVal.Interface()
 	return
+}
+
+// Update assign value from src to dst when src and dst has same field name and data type
+// src must be a struct or a pointer of struct
+// dst must be a pointer of struct
+func Update(src, dst interface{}) error {
+	if src == nil || dst == nil {
+		return errors.New("both src and dst can`t be nil value")
+	}
+	dstV := reflect.ValueOf(dst)
+	dstT := reflect.TypeOf(dst)
+	if dstT.Kind() != reflect.Ptr || reflect.TypeOf(dstV.Elem().Interface()).Kind() != reflect.Struct {
+		return errors.New("dst should be a pointer of struct")
+	}
+
+	srcT := reflect.TypeOf(src)
+	srcV := reflect.ValueOf(src)
+	if srcV.Kind() == reflect.Ptr {
+		srcT = reflect.TypeOf(srcV.Elem().Interface())
+		srcV = reflect.ValueOf(srcV.Elem().Interface())
+	}
+
+	if srcT.Kind() != reflect.Struct {
+		return errors.New("dst should be a struct or pointer of struct")
+	}
+
+	for i := 0; i < dstT.Elem().NumField(); i++ {
+		dstF := dstT.Elem().Field(i)
+		srcF, ok := srcT.FieldByName(dstF.Name)
+		if !ok {
+			continue
+		}
+
+		if dstF.Type.Kind().String() != srcF.Type.Kind().String() {
+			continue
+		}
+		dstV.Elem().Field(i).Set(srcV.FieldByName(dstF.Name))
+	}
+
+	return nil
 }
