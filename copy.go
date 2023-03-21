@@ -133,6 +133,10 @@ func Update(src, dst interface{}) error {
 			if !srcVF.IsNil() {
 				dstVF.Set(srcVF)
 			}
+		case reflect.Struct:
+			if err := Update(srcVF, dstVF.Addr().Interface()); err != nil {
+				return err
+			}
 		default:
 			dstVF.Set(srcVF)
 
